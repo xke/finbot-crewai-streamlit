@@ -1,8 +1,12 @@
-streamlit
-crewai
+streamlit==1.31.0
+crewai==0.1.32
+langchain-groq==0.0.1
+#streamlit
+#crewai
+#langchain-groq
+chromadb==0.3.29
 langchain-core
 langchain-openai
-langchain-groq
 langchain-community
 load_dotenv
 unstructured
