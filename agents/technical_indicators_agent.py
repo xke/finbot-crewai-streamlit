@@ -2,148 +2,42 @@ import os
 
 import requests
 
-from langchain.tools import tool
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-
-from sec_api import QueryApi
-from unstructured.partition.html import partition_html
-
 from crewai import Agent
+from langchain.tools import tool
 from handler import CustomHandler
 
 def get_technical_indicators_agent(chosen_llm):
   return Agent(
-          role='The More Insightful Edgar SEC Filings Researcher and Analyst',
-          goal="""Being the best at gathering and interpreting news data relevant to the
+          role='The Best Technical Indicators Researcher and Analyst for Company Stocks',
+          goal="""Being the best at gathering and interpreting Technical Indicators relevant to the
                   future prospects of the company that the customer is interested in""",
-          backstory="""The most seasoned and experienced news researcher and analyst with
-      lots of expertise in understanding which news, company announcements, and market sentiments
+          backstory="""The most seasoned and experienced technical indicators researcher and analyst with
+      lots of expertise in understanding which technical indicators 
       are most relevant to the future prospects of companies that customers are interested in.
-      Objective, unbiased approach to sorting through various news and insights.""",
+      Objective, unbiased approach to sorting through various technical indicators.""",
           verbose=True,
           tools=[
-
+              TechnicalIndicatorsTools.get_trading_view_indicators,
           ],
           llm=chosen_llm,
-          callbacks=[CustomHandler("SEC Filings Analysis Agent")]
+          callbacks=[CustomHandler("Technical Indicators Agent")]
       )
 
 class TechnicalIndicatorsTools():
-  @tool("Search 10-Q form")
-  def search_10q(data):
+  @tool("Get technical indicators")
+  def get_trading_view_indicators(stock_ticker):
     """
-    Useful to search information from the latest 10-Q form for a
-    given stock.
-    The input to this tool should be a pipe (|) separated text of
-    length two, representing the stock ticker you are interested and what
-    question you have from it.
-		For example, `AAPL|what was last quarter's revenue`.
+    Get technical indicators from the Internet for this company.
+    The input to this tool is the company stock ticker symbol.
+		For example, `AAPL`.
     """
-    stock, ask = data.split("|")
-    queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])
-    query = {
-      "query": {
-        "query_string": {
-          "query": f"ticker:{stock} AND formType:\"10-Q\""
-        }
-      },
-      "from": "0",
-      "size": "1",
-      "sort": [{ "filedAt": { "order": "desc" }}]
-    }
+    url_nasdaq = f"https://scanner.tradingview.com/symbol?symbol=NASDAQ:{stock_ticker}&fields=Recommend.Other,Recommend.All,Recommend.MA,RSI,RSI%5B1%5D,Stoch.K,Stoch.D,Stoch.K%5B1%5D,Stoch.D%5B1%5D,CCI20,CCI20%5B1%5D,ADX,ADX+DI,ADX-DI,ADX+DI%5B1%5D,ADX-DI%5B1%5D,AO,AO%5B1%5D,AO%5B2%5D,Mom,Mom%5B1%5D,MACD.macd,MACD.signal,Rec.Stoch.RSI,Stoch.RSI.K,Rec.WR,W.R,Rec.BBPower,BBPower,Rec.UO,UO,EMA10,close,SMA10,EMA20,SMA20,EMA30,SMA30,EMA50,SMA50,EMA100,SMA100,EMA200,SMA200,Rec.Ichimoku,Ichimoku.BLine,Rec.VWMA,VWMA,Rec.HullMA9,HullMA9,Pivot.M.Classic.S3,Pivot.M.Classic.S2,Pivot.M.Classic.S1,Pivot.M.Classic.Middle,Pivot.M.Classic.R1,Pivot.M.Classic.R2,Pivot.M.Classic.R3,Pivot.M.Fibonacci.S3,Pivot.M.Fibonacci.S2,Pivot.M.Fibonacci.S1,Pivot.M.Fibonacci.Middle,Pivot.M.Fibonacci.R1,Pivot.M.Fibonacci.R2,Pivot.M.Fibonacci.R3,Pivot.M.Camarilla.S3,Pivot.M.Camarilla.S2,Pivot.M.Camarilla.S1,Pivot.M.Camarilla.Middle,Pivot.M.Camarilla.R1,Pivot.M.Camarilla.R2,Pivot.M.Camarilla.R3,Pivot.M.Woodie.S3,Pivot.M.Woodie.S2,Pivot.M.Woodie.S1,Pivot.M.Woodie.Middle,Pivot.M.Woodie.R1,Pivot.M.Woodie.R2,Pivot.M.Woodie.R3,Pivot.M.Demark.S1,Pivot.M.Demark.Middle,Pivot.M.Demark.R1&no_404=true"
+    url_nyse = f"https://scanner.tradingview.com/symbol?symbol=NYSE:{stock_ticker}&fields=Recommend.Other,Recommend.All,Recommend.MA,RSI,RSI%5B1%5D,Stoch.K,Stoch.D,Stoch.K%5B1%5D,Stoch.D%5B1%5D,CCI20,CCI20%5B1%5D,ADX,ADX+DI,ADX-DI,ADX+DI%5B1%5D,ADX-DI%5B1%5D,AO,AO%5B1%5D,AO%5B2%5D,Mom,Mom%5B1%5D,MACD.macd,MACD.signal,Rec.Stoch.RSI,Stoch.RSI.K,Rec.WR,W.R,Rec.BBPower,BBPower,Rec.UO,UO,EMA10,close,SMA10,EMA20,SMA20,EMA30,SMA30,EMA50,SMA50,EMA100,SMA100,EMA200,SMA200,Rec.Ichimoku,Ichimoku.BLine,Rec.VWMA,VWMA,Rec.HullMA9,HullMA9,Pivot.M.Classic.S3,Pivot.M.Classic.S2,Pivot.M.Classic.S1,Pivot.M.Classic.Middle,Pivot.M.Classic.R1,Pivot.M.Classic.R2,Pivot.M.Classic.R3,Pivot.M.Fibonacci.S3,Pivot.M.Fibonacci.S2,Pivot.M.Fibonacci.S1,Pivot.M.Fibonacci.Middle,Pivot.M.Fibonacci.R1,Pivot.M.Fibonacci.R2,Pivot.M.Fibonacci.R3,Pivot.M.Camarilla.S3,Pivot.M.Camarilla.S2,Pivot.M.Camarilla.S1,Pivot.M.Camarilla.Middle,Pivot.M.Camarilla.R1,Pivot.M.Camarilla.R2,Pivot.M.Camarilla.R3,Pivot.M.Woodie.S3,Pivot.M.Woodie.S2,Pivot.M.Woodie.S1,Pivot.M.Woodie.Middle,Pivot.M.Woodie.R1,Pivot.M.Woodie.R2,Pivot.M.Woodie.R3,Pivot.M.Demark.S1,Pivot.M.Demark.Middle,Pivot.M.Demark.R1&no_404=true"
 
-    fillings = queryApi.get_filings(query)['filings']
-    if len(fillings) == 0:
-      return "Sorry, I couldn't find any filling for this stock, check if the ticker is correct."
-    link = fillings[0]['linkToFilingDetails']
-    answer = SECTools.__embedding_search(link, ask)
-    return answer
+    data_nasdaq = requests.get(url=url_nasdaq)
+    data_nyse = requests.get(url=url_nyse)
 
-  @tool("Search 10-K form")
-  def search_10k(data):
-    """
-    Useful to search information from the latest 10-K form for a
-    given stock.
-    The input to this tool should be a pipe (|) separated text of
-    length two, representing the stock ticker you are interested, what
-    question you have from it.
-    For example, `AAPL|what was last year's revenue`.
-    """
-    stock, ask = data.split("|")
-    queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])
-    query = {
-      "query": {
-        "query_string": {
-          "query": f"ticker:{stock} AND formType:\"10-K\""
-        }
-      },
-      "from": "0",
-      "size": "1",
-      "sort": [{ "filedAt": { "order": "desc" }}]
-    }
+    # combine both data (since the company could be either on NYSE or NASDAQ)
+    return str(data_nasdaq) + " " + str(data_nyse)
 
-    fillings = queryApi.get_filings(query)['filings']
-    if len(fillings) == 0:
-      return "Sorry, I couldn't find any filling for this stock, check if the ticker is correct."
-    link = fillings[0]['linkToFilingDetails']
-    answer = SECTools.__embedding_search(link, ask)
-    return answer
-
-  def __embedding_search(url, ask):
-    text = SECTools.__download_form_html(url)
-    elements = partition_html(text=text)
-    content = "\n".join([str(el) for el in elements])
-    text_splitter = CharacterTextSplitter(
-        separator = "\n",
-        chunk_size = 1000,
-        chunk_overlap  = 150,
-        length_function = len,
-        is_separator_regex = False,
-    )
-
-     
-    docs = text_splitter.create_documents([content])
-
-    # Faiss retriever with OpenAI embeddings
-    #
-    #retriever = FAISS.from_documents(
-    #  docs, OpenAIEmbeddings()
-    #).as_retriever()
-
-    # alternative embedding; Chroma takes a long time to load and times out the CrewAI telemetry
-    #embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    #retriever = Chroma.from_documents(docs, embedding_function).as_retriever()
-
-    retriever = FAISS.from_documents(
-       docs, HuggingFaceEmbeddings()
-    ).as_retriever()
-
-    answers = retriever.invoke(ask, top_k=4)
-    answers = "\n\n".join([a.page_content for a in answers])
-    return answers
-
-  def __download_form_html(url):
-    headers = {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7',
-      'Cache-Control': 'max-age=0',
-      'Dnt': '1',
-      'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120"',
-      'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"macOS"',
-      'Sec-Fetch-Dest': 'document',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-User': '?1',
-      'Upgrade-Insecure-Requests': '1',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-
-    response = requests.get(url, headers=headers)
-    return response.text
+  

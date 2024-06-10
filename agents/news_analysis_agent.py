@@ -5,6 +5,7 @@ import requests
 from langchain.tools import tool
 from crewai import Agent
 
+# TODO: seems like some issue with using YahooFinanceNewsTool
 from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
 from handler import CustomHandler
 

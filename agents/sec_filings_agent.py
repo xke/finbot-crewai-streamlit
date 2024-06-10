@@ -20,12 +20,12 @@ from handler import CustomHandler
 def get_sec_filings_agent(chosen_llm):
   return Agent(
           role='The More Insightful Edgar SEC Filings Researcher and Analyst',
-          goal="""Being the best at gathering and interpreting news data relevant to the
+          goal="""Being the best at gathering and interpreting Edgar SEC Filings data relevant to the
                   future prospects of the company that the customer is interested in""",
-          backstory="""The most seasoned and experienced news researcher and analyst with
-      lots of expertise in understanding which news, company announcements, and market sentiments
-      are most relevant to the future prospects of companies that customers are interested in.
-      Objective, unbiased approach to sorting through various news and insights.""",
+          backstory="""The most seasoned and experienced Edgar SEC filings researcher and analyst with
+      lots of expertise in understanding which information is most relevant to the future prospects of 
+      companies that customers are interested in. Objective, unbiased approach to sorting through 
+      various information in the SEC filings.""",
           verbose=True,
           tools=[
               SECTools.search_10q,
@@ -35,7 +35,7 @@ def get_sec_filings_agent(chosen_llm):
           callbacks=[CustomHandler("SEC Filings Agent")]
       )
 
-# why is it that this doesn't work with GPT-3.5 but does work with GPT-4?
+# TODO: why is it that this doesn't work with GPT-3.5 but does work with GPT-4?
 # seems to work with gemma also
 
 class SECTools():

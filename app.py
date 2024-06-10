@@ -7,7 +7,7 @@ from langchain_groq import ChatGroq
 
 from agents.news_analysis_agent import get_news_analysis_agent
 from agents.sec_filings_agent import get_sec_filings_agent
-#from agents.technical_indicators_agent import get_technical_indicators_agent
+from agents.technical_indicators_agent import get_technical_indicators_agent
 
 #from agents.news_analysis_agent import SearchTools
 #from agents.sec_filings_agent import SECTools
@@ -92,35 +92,31 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
         )
         tasksList.append(analyze_sec_filings_task)
 
-    # TODO: to enable this functionality
-    # if technical_indicators_agent_enabled:
-    #     agentsList.append(technical_indicators_agent)
-    #     analyze_sec_filings_task = Task(
-    #         description=dedent(f"""
-    #             Analyze the latest 10-Q and 10-K filings from EDGAR for
-    #             the company in question.
-    #             Focus on key sections like Management's Discussion and
-    #             Analysis, financial statements, insider trading activity,
-    #             and any disclosed risks.
-    #             Extract relevant data and insights that could influence
-    #             the company's future performance.
+    if technical_indicators_agent_enabled:
+        agentsList.append(technical_indicators_agent)
+        analyze_technical_indicators_task = Task(
+            description=dedent(f"""
+                Analyze the latest technical indicators for
+                the company in question.
+                               
+                Selected company by the customer: {company}
+                Today's date: {date.today()}
 
-    #             Selected company by the customer: {company}
-    #             Today's date: {date.today()}
-    #         """),
-    #         expected_output=dedent(f"""
-    #             Your output is a concise report that
-    #             highlights significant findings from these filings,
-    #             including any red flags or positive indicators for your
-    #             customer.
+                Please convert the company name to its stock ticker symbol to get 
+                the technical indicator data.
+            """),
+            expected_output=dedent(f"""
+                Your output is a concise report that includes a
+                summary of the technical indicators, and impacts on
+                the future of the company.
 
-    #             Also include in the output the company's stock ticker symbol,
-    #             whether you believe the company's stock price will increase
-    #             in the next {prediction_time_horizon_in_years} years, and the confidence
-    #             level of your prediction/belief."""),
-    #         agent=sec_filings_agent
-    #     )
-    #     tasksList.append(analyze_technical_indicators_task)
+                Also include in the output the company's stock ticker symbol,
+                whether you believe the company's stock price will increase
+                in the next {prediction_time_horizon_in_years} years, and the confidence
+                level of your prediction/belief."""),
+            agent=technical_indicators_agent
+        )
+        tasksList.append(analyze_technical_indicators_task)
 
     # Set up the crew and process tasks hierarchically
     project_crew = Crew(
@@ -190,8 +186,8 @@ technical_indicators_agent_enabled = st.sidebar.checkbox(
     value=False
 )
 
-#if technical_indicators_agent_enabled:
-#    technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
+if technical_indicators_agent_enabled:
+    technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
 
 
 # Main Streamlit UI setup
