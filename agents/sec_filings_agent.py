@@ -4,11 +4,10 @@ import requests
 
 from langchain.tools import tool
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
+#from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+#from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 
 from sec_api import QueryApi
 from unstructured.partition.html import partition_html
