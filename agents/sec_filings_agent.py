@@ -48,6 +48,10 @@ class SECTools():
     length two, representing the stock ticker you are interested and what
     question you have from it.
 		For example, `AAPL|what was last quarter's revenue`.
+
+    If the input only has the ticker symbol, just come up with a question
+    that would be highly relevant to someone wanting to know the future
+    prospect of the company with this ticket symbol.
     """
     stock, ask = data.split("|")
     queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])
@@ -78,6 +82,10 @@ class SECTools():
     length two, representing the stock ticker you are interested, what
     question you have from it.
     For example, `AAPL|what was last year's revenue`.
+
+    If the input only has the ticker symbol, just come up with a question
+    that would be highly relevant to someone wanting to know the future
+    prospect of the company with this ticket symbol.
     """
     stock, ask = data.split("|")
     queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])

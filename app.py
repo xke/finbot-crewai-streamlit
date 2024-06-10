@@ -118,6 +118,9 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
         )
         tasksList.append(analyze_technical_indicators_task)
 
+    #print(agentsList)
+    #print(tasksList)
+
     # Set up the crew and process tasks hierarchically
     project_crew = Crew(
         tasks=tasksList,
