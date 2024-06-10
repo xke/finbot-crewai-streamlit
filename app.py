@@ -21,9 +21,16 @@ load_dotenv()
 
 from datetime import date
 
-#weave.init('finbot-crewai-streamlit')
 
-#@weave.op()
+#__import__('pysqlite3')
+#import sys
+#sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+
+
+weave.init('finbot-crewai-streamlit')
+
+@weave.op()
 def process_user_input(company, chosen_llm, historical_horizon_in_years, prediction_time_horizon_in_years):
 
     st.session_state.messages.append({"role": "user", "content": company})
