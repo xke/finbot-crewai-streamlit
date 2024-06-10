@@ -6,7 +6,7 @@ from langchain.tools import tool
 from crewai import Agent
 
 # TODO: seems like some issue with using YahooFinanceNewsTool
-from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
+# from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
 from handler import CustomHandler
 
 #import weave
@@ -25,7 +25,7 @@ def get_news_analysis_agent(chosen_llm):
           tools=[
               SearchTools.search_internet,
               SearchTools.search_news,
-              YahooFinanceNewsTool(),
+              #YahooFinanceNewsTool(),
           ],
           llm=chosen_llm,
           callbacks=[CustomHandler("News Analysis Agent")]
