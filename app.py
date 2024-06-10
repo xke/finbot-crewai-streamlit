@@ -21,13 +21,6 @@ load_dotenv()
 
 from datetime import date
 
-
-#__import__('pysqlite3')
-#import sys
-#sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
-
-
 weave.init('finbot-crewai-streamlit')
 
 @weave.op()
