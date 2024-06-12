@@ -109,12 +109,14 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
             expected_output=dedent(f"""
                 Your output is a concise report that includes a
                 summary of the technical indicators, and impacts on
-                the future of the company.
-
-                Also include in the output the company's stock ticker symbol,
+                the future of the company. This report should be in readable text,
+                not a JSON structure.
+                                   
+                Include in the output the company's stock ticker symbol,
                 whether you believe the company's stock price will increase
                 in the next {prediction_time_horizon_in_years} years, and the confidence
-                level of your prediction/belief."""),
+                level of your prediction/belief.
+                """),
             agent=technical_indicators_agent
         )
         tasksList.append(analyze_technical_indicators_task)
@@ -126,6 +128,7 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
     project_crew = Crew(
         tasks=tasksList,
         agents=agentsList,
+        process=Process.sequential,
         manager_llm=chosen_llm,
         manager_callbacks=[CustomHandler("Manager")]
     )

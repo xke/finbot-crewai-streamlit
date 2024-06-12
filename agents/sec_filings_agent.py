@@ -47,7 +47,7 @@ class SECTools():
     given stock.
 
     The input to this tool should be a stock ticker representing the company
-    you are interested in. Come up with one or more questions that would be
+    you are interested in. Come up with one or two questions that would be
     highly relevant to someone wanting to know the future
     prospect of the company with this ticker symbol. 
     """
@@ -77,7 +77,7 @@ class SECTools():
     given stock.
     
     The input to this tool should be a stock ticker representing the company
-    you are interested in. Come up with one or more questions that would be
+    you are interested in. Come up with one or two questions that would be
     highly relevant to someone wanting to know the future
     prospect of the company with this ticker symbol.
     """
