@@ -124,6 +124,9 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
     #print(agentsList)
     #print(tasksList)
 
+    if len(agentsList)==0:
+        return "No agents found. Please choose at least one agent."
+    
     # Set up the crew and process tasks hierarchically
     project_crew = Crew(
         tasks=tasksList,
