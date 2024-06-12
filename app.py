@@ -24,9 +24,10 @@ from datetime import date
 
 weave.init('finbot-crewai-streamlit')
 
-@weave.op()
-def process_user_input(company, chosen_llm, historical_horizon_in_years, prediction_time_horizon_in_years,
-                       news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
+@weave.op() # "model" parameter is specified for logging purposes
+def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                    news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
+
 
     st.session_state.messages.append({"role": "user", "content": company})
     st.chat_message("user").write(company)
@@ -132,7 +133,7 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
         tasks=tasksList,
         agents=agentsList,
         process=Process.sequential,
-        manager_llm=chosen_llm,
+        #manager_llm=chosen_llm, # only required for hierarchical process
         manager_callbacks=[CustomHandler("Manager")]
     )
 
@@ -224,8 +225,8 @@ for msg in st.session_state.messages:
 # Handle user input
 if company := st.chat_input():
 
-    report = process_user_input(company, chosen_llm, historical_horizon_in_years, prediction_time_horizon_in_years,
-                                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
+    report = run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                      news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
 
     # Display the final result
     result = f"##### Manager's Final Report: \n\n {report}"
