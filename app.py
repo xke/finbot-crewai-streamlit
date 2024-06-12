@@ -193,7 +193,7 @@ if news_analysis_agent_enabled:
     news_analysis_agent = get_news_analysis_agent(chosen_llm)
 
 sec_filings_agent_enabled = st.sidebar.checkbox(
-    'SEC filings agent',
+    'SEC filings agent (alpha version)',
     value=False
 )
 
