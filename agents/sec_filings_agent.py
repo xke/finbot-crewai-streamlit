@@ -27,6 +27,7 @@ def get_sec_filings_agent(chosen_llm):
       companies that customers are interested in. Objective, unbiased approach to sorting through 
       various information in the SEC filings.""",
           verbose=True,
+          allow_delegation=False,
           tools=[
               SECTools.search_10q,
               SECTools.search_10k
@@ -40,20 +41,16 @@ def get_sec_filings_agent(chosen_llm):
 
 class SECTools():
   @tool("Search 10-Q form")
-  def search_10q(data):
+  def search_10q(stock, question):
     """
     Useful to search information from the latest 10-Q form for a
     given stock.
-    The input to this tool should be a pipe (|) separated text of
-    length two, representing the stock ticker you are interested and what
-    question you have from it.
-		For example, `AAPL|what was last quarter's revenue`.
 
-    If the input only has the ticker symbol, just come up with a question
-    that would be highly relevant to someone wanting to know the future
-    prospect of the company with this ticket symbol.
+    The input to this tool should be a stock ticker representing the company
+    you are interested in. Come up with one or more questions that would be
+    highly relevant to someone wanting to know the future
+    prospect of the company with this ticker symbol. 
     """
-    stock, ask = data.split("|")
     queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])
     query = {
       "query": {
@@ -70,24 +67,20 @@ class SECTools():
     if len(fillings) == 0:
       return "Sorry, I couldn't find any filling for this stock, check if the ticker is correct."
     link = fillings[0]['linkToFilingDetails']
-    answer = SECTools.__embedding_search(link, ask)
+    answer = SECTools.__embedding_search(link, question)
     return answer
 
   @tool("Search 10-K form")
-  def search_10k(data):
+  def search_10k(stock, question):
     """
     Useful to search information from the latest 10-K form for a
     given stock.
-    The input to this tool should be a pipe (|) separated text of
-    length two, representing the stock ticker you are interested, what
-    question you have from it.
-    For example, `AAPL|what was last year's revenue`.
-
-    If the input only has the ticker symbol, just come up with a question
-    that would be highly relevant to someone wanting to know the future
-    prospect of the company with this ticket symbol.
+    
+    The input to this tool should be a stock ticker representing the company
+    you are interested in. Come up with one or more questions that would be
+    highly relevant to someone wanting to know the future
+    prospect of the company with this ticker symbol.
     """
-    stock, ask = data.split("|")
     queryApi = QueryApi(api_key=os.environ['SEC_API_API_KEY'])
     query = {
       "query": {
@@ -104,7 +97,7 @@ class SECTools():
     if len(fillings) == 0:
       return "Sorry, I couldn't find any filling for this stock, check if the ticker is correct."
     link = fillings[0]['linkToFilingDetails']
-    answer = SECTools.__embedding_search(link, ask)
+    answer = SECTools.__embedding_search(link, question)
     return answer
 
   def __embedding_search(url, ask):

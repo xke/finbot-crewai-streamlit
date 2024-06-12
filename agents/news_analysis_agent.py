@@ -22,6 +22,7 @@ def get_news_analysis_agent(chosen_llm):
       are most relevant to the future prospects of companies that customers are interested in.
       Objective, unbiased approach to sorting through various news and insights.""",
           verbose=True,
+          allow_delegation=False,
           tools=[
               SearchTools.search_internet,
               SearchTools.search_news,

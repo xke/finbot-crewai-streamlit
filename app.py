@@ -1,5 +1,6 @@
 import streamlit as st
 import weave
+import agentops
 
 from crewai import Crew, Process, Agent, Task
 from langchain_openai import ChatOpenAI
@@ -125,7 +126,6 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
     project_crew = Crew(
         tasks=tasksList,
         agents=agentsList,
-        process=Process.hierarchical,
         manager_llm=chosen_llm,
         manager_callbacks=[CustomHandler("Manager")]
     )
@@ -136,21 +136,31 @@ def process_user_input(company, chosen_llm, historical_horizon_in_years, predict
 
 # Set up the Streamlit UI customization sidebar
 st.sidebar.title('Customizations')
+
+# TODO: fix OpenAI gpt
+#model = st.sidebar.selectbox(
+#    'Choose AI model to use',
+#    ['gpt-3.5-turbo', 'gpt-4o', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
+#    index=4, # default to gemma-7b-it
+#)
+
 model = st.sidebar.selectbox(
     'Choose AI model to use',
-    ['gpt-3.5-turbo', 'gpt-4o', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
-    index=4, # default to gemma-7b-it
+    ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
+    index=1, # default to mixtral-8x7b-32768
 )
 
+
 # Set up model (automatically called again when model is changed)
-if model!=None and model.startswith('gpt'):
-    chosen_llm = ChatOpenAI(model=model, temperature=0.1) # openai
-else:
-    chosen_llm = ChatGroq(
-            temperature=0, 
-            groq_api_key = os.environ['GROQ_API_KEY'], 
-            model_name=model
-        )
+#if model!=None and model.startswith('gpt'):
+#    chosen_llm = ChatOpenAI(model=model, temperature=0.1) # openai
+#else:
+
+chosen_llm = ChatGroq(
+        temperature=0, 
+        groq_api_key = os.environ['GROQ_API_KEY'], 
+        model_name=model
+    )
     
 historical_horizon_in_years = st.sidebar.number_input(
     'Historical time horizon (in years)',
