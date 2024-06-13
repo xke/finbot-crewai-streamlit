@@ -140,6 +140,10 @@ def run_crew(model, company, historical_horizon_in_years, prediction_time_horizo
     report = project_crew.kickoff()
     return report
 
+# Main Streamlit UI setup
+
+st.set_page_config(page_title="Finbot: A Company Analysis Tool", page_icon="🤓")
+st.title("Finbot: A Company Analysis Tool")
 
 # Set up the Streamlit UI customization sidebar
 st.sidebar.title('Customizations')
@@ -209,9 +213,6 @@ technical_indicators_agent_enabled = st.sidebar.checkbox(
 if technical_indicators_agent_enabled:
     technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
 
-
-# Main Streamlit UI setup
-st.title("Finbot: A Company Analysis Tool")
 
 # Initialize the message log in session state if not already present
 if "messages" not in st.session_state:
