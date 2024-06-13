@@ -203,7 +203,7 @@ if sec_filings_agent_enabled:
 
 technical_indicators_agent_enabled = st.sidebar.checkbox(
     'Technical indicators agent',
-    value=False
+    value=True
 )
 
 if technical_indicators_agent_enabled:
