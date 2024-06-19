@@ -6,6 +6,7 @@ langchain-groq
 langchain-openai # see related issue https://github.com/microsoft/promptflow/issues/3079
 langchain-anthropic
 chromadb
+pysqlite3-binary
 load_dotenv
 unstructured
 pyowm
