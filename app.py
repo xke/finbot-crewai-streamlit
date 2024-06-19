@@ -1,6 +1,7 @@
 import streamlit as st
 import weave
 import agentops
+from agentops import record_function
 import os 
 
 from crewai import Crew, Process, Agent, Task
@@ -25,14 +26,14 @@ load_dotenv()
 
 from datetime import date
 
-agentops.init(tags=["finbot-crewai-streamlit"])
-weave.init('finbot-crewai-streamlit')
+#weave.init('finbot-crewai-streamlit')
 
-@weave.op()
-def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-            news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):
-    return result
+#@weave.op()
+# def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+#             news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):
+#     return result
 
+@record_function('run_crew')
 def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                     news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
 
@@ -147,13 +148,26 @@ def run_crew(model, company, historical_horizon_in_years, prediction_time_horizo
     report = project_crew.kickoff()
     return report
 
+
+def icon(emoji: str):
+    """Shows an emoji as a Notion-style page icon."""
+    st.write(
+        f'<span style="font-size: 78px; line-height: 1">{emoji}</span>',
+        unsafe_allow_html=True,
+    )
+
 if __name__ == "__main__":
 
+    st.set_page_config(page_title="Finbot", page_icon="📈", layout="wide")
+
     # Main Streamlit UI setup
+    icon("📈 **Finbot**")
 
-    st.set_page_config(page_title="Finbot: An Analysis Tool", page_icon="🤓")
-    st.title("Finbot: An Analysis Tool")
+    #st.title("A Company Analysis Tool for Curious Investors")
 
+    st.subheader("A Company Analysis Tool for Curious Investors",
+                 divider="violet", anchor=False)
+    
     # Set up the Streamlit UI customization sidebar
     st.sidebar.title('Customizations')
 
@@ -221,9 +235,21 @@ if __name__ == "__main__":
         technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
 
 
+    st.sidebar.write("")
+    st.sidebar.write("")
+    st.sidebar.markdown(
+    """
+    *This is an [open-source demo app](https://github.com/xke/finbot-crewai-streamlit). Use the AI output at your own risk.*
+    
+    *The [S&P 500](https://en.wikipedia.org/wiki/S%26P_500) is a diversified investment option that includes 500 companies.*
+    """,
+        unsafe_allow_html=True
+    )
+  
+    
     # Initialize the message log in session state if not already present
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "assistant", "content": "##### What company do you want us to analyze?"}]
+        st.session_state["messages"] = [{"role": "assistant", "content": "##### What company do you want to analyze?"}]
 
 
     # Display existing messages
@@ -232,8 +258,12 @@ if __name__ == "__main__":
 
     # Handle user input
     if company := st.chat_input():
-        log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
+
+        agentops.init(tags=["finbot-crewai-streamlit", company, model])
+
+        # log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+        #         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
+
 
         report = run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
@@ -243,7 +273,8 @@ if __name__ == "__main__":
         st.session_state.messages.append({"role": "assistant", "content": result})
         st.chat_message("assistant").write(result)
 
-        log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
+        # log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+        #         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
 
-
+        if result: 
+            agentops.end_session('Success')
