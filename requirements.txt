@@ -1,11 +1,11 @@
 streamlit
 crewai
-langchain-groq
-chromadb
-pysqlite3-binary
 langchain-core
-langchain-openai
 langchain-community
+langchain-groq
+langchain-openai # see related issue https://github.com/microsoft/promptflow/issues/3079
+langchain-anthropic
+chromadb
 load_dotenv
 unstructured
 pyowm
@@ -18,3 +18,4 @@ faiss-cpu
 python-dotenv
 agentops
 weave
+langsmith

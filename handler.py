@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 import weave
 
-
 class CustomHandler(BaseCallbackHandler):
     """A custom handler for logging interactions within the process chain."""
     

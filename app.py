@@ -1,17 +1,20 @@
 import streamlit as st
 import weave
 import agentops
+import os 
 
 from crewai import Crew, Process, Agent, Task
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI  # "generator" error https://github.com/microsoft/promptflow/pull/3179
 from langchain_groq import ChatGroq
+from langchain_anthropic import ChatAnthropic
+
+#from langchain_community.llms import HuggingFaceHub
+#from langsmith import traceable
 
 from agents.news_analysis_agent import get_news_analysis_agent
 from agents.sec_filings_agent import get_sec_filings_agent
 from agents.technical_indicators_agent import get_technical_indicators_agent
 
-#from agents.news_analysis_agent import SearchTools
-#from agents.sec_filings_agent import SECTools
 
 from textwrap import dedent
 import os
@@ -22,12 +25,16 @@ load_dotenv()
 
 from datetime import date
 
+agentops.init(tags=["finbot-crewai-streamlit"])
 weave.init('finbot-crewai-streamlit')
 
-@weave.op() # "model" parameter is specified for logging purposes
+@weave.op()
+def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+            news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):
+    return result
+
 def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                     news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
-
 
     st.session_state.messages.append({"role": "user", "content": company})
     st.chat_message("user").write(company)
@@ -140,97 +147,103 @@ def run_crew(model, company, historical_horizon_in_years, prediction_time_horizo
     report = project_crew.kickoff()
     return report
 
-# Main Streamlit UI setup
+if __name__ == "__main__":
 
-st.set_page_config(page_title="Finbot: A Company Analysis Tool", page_icon="🤓")
-st.title("Finbot: A Company Analysis Tool")
+    # Main Streamlit UI setup
 
-# Set up the Streamlit UI customization sidebar
-st.sidebar.title('Customizations')
+    st.set_page_config(page_title="Finbot: An Analysis Tool", page_icon="🤓")
+    st.title("Finbot: An Analysis Tool")
 
-# TODO: fix OpenAI gpt
-#model = st.sidebar.selectbox(
-#    'Choose AI model to use',
-#    ['gpt-3.5-turbo', 'gpt-4o', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
-#    index=4, # default to gemma-7b-it
-#)
+    # Set up the Streamlit UI customization sidebar
+    st.sidebar.title('Customizations')
 
-model = st.sidebar.selectbox(
-    'Choose AI model to use',
-    ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
-    index=1, # default to mixtral-8x7b-32768
-)
-
-
-# Set up model (automatically called again when model is changed)
-#if model!=None and model.startswith('gpt'):
-#    chosen_llm = ChatOpenAI(model=model, temperature=0.1) # openai
-#else:
-
-chosen_llm = ChatGroq(
-        temperature=0, 
-        groq_api_key = os.environ['GROQ_API_KEY'], 
-        model_name=model
+    model = st.sidebar.selectbox(
+       'Choose AI model to use',
+       ['gpt-3.5-turbo', 'claude-3-haiku-20240307', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
+       index=1, # default to claude-3-haiku-20240307
     )
-    
-historical_horizon_in_years = st.sidebar.number_input(
-    'Historical time horizon (in years)',
-    value=1.0, min_value=0.0, max_value=10.0, step=0.5, format="%.1f"
-)
 
-prediction_time_horizon_in_years = st.sidebar.number_input(
-    'Prediction time horizon (in years)',
-    value=0.5, min_value=0.0, max_value=10.0, step=0.5, format="%.1f"
-)
+    # Set up model (automatically called again when model is changed)
+    if model!=None and model.startswith('gpt'):
+        chosen_llm = ChatOpenAI(model=model, temperature=0.1) # gpt models
+    elif model!=None and model.startswith('claude'):
+        chosen_llm = ChatAnthropic(model=model, temperature=0.1) # claude models
+    else:
+        chosen_llm = ChatGroq(
+            temperature=0.1, 
+            groq_api_key = os.environ['GROQ_API_KEY'], 
+            model_name=model)
+
+    # else:
+    #     # some of these HF models are too big to run as is: 'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mixtral-8x22B-Instruct-v0.1', 'google/gemma-7b-it'
+    #     chosen_llm = HuggingFaceHub(
+    #         repo_id=model,
+    #         huggingfacehub_api_token=os.environ['HF_TOKEN'],
+    #         task="text-generation")
+
+    historical_horizon_in_years = st.sidebar.number_input(
+        'Historical time horizon (in years)',
+        value=1.0, min_value=0.0, max_value=10.0, step=0.5, format="%.1f"
+    )
+
+    prediction_time_horizon_in_years = st.sidebar.number_input(
+        'Prediction time horizon (in years)',
+        value=0.5, min_value=0.0, max_value=10.0, step=0.5, format="%.1f"
+    )
+
+    # Define agents with their specific roles and goals
+
+    st.sidebar.write("")
+    st.sidebar.write("Choose CrewAI agent(s) to use:")
+
+    news_analysis_agent_enabled = st.sidebar.checkbox(
+        'News analysis agent',
+        value=True
+    )
+
+    if news_analysis_agent_enabled:
+        news_analysis_agent = get_news_analysis_agent(chosen_llm)
+
+    sec_filings_agent_enabled = st.sidebar.checkbox(
+        'SEC filings agent (alpha version)',
+        value=False
+    )
+
+    if sec_filings_agent_enabled:
+        sec_filings_agent = get_sec_filings_agent(chosen_llm)
+
+    technical_indicators_agent_enabled = st.sidebar.checkbox(
+        'Technical indicators agent',
+        value=True
+    )
+
+    if technical_indicators_agent_enabled:
+        technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
 
 
-# Define agents with their specific roles and goals
-
-st.sidebar.write("")
-st.sidebar.write("Choose CrewAI agent(s) to use:")
-
-news_analysis_agent_enabled = st.sidebar.checkbox(
-    'News analysis agent',
-    value=True
-)
-
-if news_analysis_agent_enabled:
-    news_analysis_agent = get_news_analysis_agent(chosen_llm)
-
-sec_filings_agent_enabled = st.sidebar.checkbox(
-    'SEC filings agent (alpha version)',
-    value=False
-)
-
-if sec_filings_agent_enabled:
-    sec_filings_agent = get_sec_filings_agent(chosen_llm)
-
-technical_indicators_agent_enabled = st.sidebar.checkbox(
-    'Technical indicators agent',
-    value=True
-)
-
-if technical_indicators_agent_enabled:
-    technical_indicators_agent = get_technical_indicators_agent(chosen_llm)
+    # Initialize the message log in session state if not already present
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "##### What company do you want us to analyze?"}]
 
 
-# Initialize the message log in session state if not already present
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "##### What company do you want us to analyze?"}]
+    # Display existing messages
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
+    # Handle user input
+    if company := st.chat_input():
+        log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
 
-# Display existing messages
-for msg in st.session_state.messages:
-    st.chat_message(msg["role"]).write(msg["content"])
+        report = run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                        news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
 
-# Handle user input
-if company := st.chat_input():
+        # Display the final result
+        result = f"##### Manager's Final Report: \n\n {report}"
+        st.session_state.messages.append({"role": "assistant", "content": result})
+        st.chat_message("assistant").write(result)
 
-    report = run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-                      news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
+        log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
 
-    # Display the final result
-    result = f"##### Manager's Final Report: \n\n {report}"
-    st.session_state.messages.append({"role": "assistant", "content": result})
-    st.chat_message("assistant").write(result)
 

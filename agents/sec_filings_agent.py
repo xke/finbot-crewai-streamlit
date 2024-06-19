@@ -36,9 +36,6 @@ def get_sec_filings_agent(chosen_llm):
           callbacks=[CustomHandler("SEC Filings Agent")]
       )
 
-# TODO: why is it that this doesn't work with GPT-3.5 but does work with GPT-4?
-# seems to work with gemma also
-
 class SECTools():
   @tool("Search 10-Q form")
   def search_10q(stock, question):
