@@ -5,17 +5,16 @@ from agentops import record_function
 import os 
 
 from crewai import Crew, Process, Agent, Task
-from langchain_openai import ChatOpenAI  # "generator" error https://github.com/microsoft/promptflow/pull/3179
+from langchain_openai import ChatOpenAI  # triggers "generator" error on Python decorators https://github.com/microsoft/promptflow/pull/3179
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 
 #from langchain_community.llms import HuggingFaceHub
-#from langsmith import traceable
+from langsmith import traceable
 
 from agents.news_analysis_agent import get_news_analysis_agent
 from agents.sec_filings_agent import get_sec_filings_agent
 from agents.technical_indicators_agent import get_technical_indicators_agent
-
 
 from textwrap import dedent
 import os
@@ -26,14 +25,15 @@ load_dotenv()
 
 from datetime import date
 
-#weave.init('finbot-crewai-streamlit')
-
 #@weave.op()
-# def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-#             news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):
-#     return result
+#@traceable
+@record_function('log_run')
+def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+             news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):     
+    return result
 
-@record_function('run_crew')
+#@record_function('run_crew')  # decorator triggers "generator" error with langchain_openai https://github.com/microsoft/promptflow/pull/3179
+#@weave.op()
 def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                     news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
 
@@ -157,13 +157,12 @@ def icon(emoji: str):
     )
 
 if __name__ == "__main__":
+    #weave.init('finbot-crewai-streamlit')
 
     st.set_page_config(page_title="Finbot", page_icon="📈", layout="wide")
 
     # Main Streamlit UI setup
     icon("📈 **Finbot**")
-
-    #st.title("A Company Analysis Tool for Curious Investors")
 
     st.subheader("A Company Analysis Tool for Curious Investors",
                  divider="violet", anchor=False)
@@ -261,9 +260,8 @@ if __name__ == "__main__":
 
         agentops.init(tags=["finbot-crewai-streamlit", company, model])
 
-        # log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-        #         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
-
+        log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
 
         report = run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled)
@@ -273,8 +271,8 @@ if __name__ == "__main__":
         st.session_state.messages.append({"role": "assistant", "content": result})
         st.chat_message("assistant").write(result)
 
-        # log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
-        #         news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
+        log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
+                news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
 
         if result: 
             agentops.end_session('Success')
