@@ -172,8 +172,8 @@ if __name__ == "__main__":
     #TODO: issue with using gpt-3.5-turbo for some reason
     model = st.sidebar.selectbox(
        'Choose AI model to use',
-       ['claude-3-haiku-20240307', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
-       index=0, # default to claude-3-haiku-20240307
+       ['claude-3-5-sonnet-20240620', 'claude-3-haiku-20240307', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
+       index=1, # default to claude-3-haiku-20240307
     )
 
     # Set up model (automatically called again when model is changed)
