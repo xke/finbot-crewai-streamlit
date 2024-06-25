@@ -17,6 +17,6 @@ sec-api
 tiktoken
 faiss-cpu
 python-dotenv
-agentops
+agentops==0.2.3
 weave
 langsmith
