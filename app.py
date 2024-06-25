@@ -1,6 +1,5 @@
 import streamlit as st
 import agentops
-from agentops import record_function, record, ActionEvent
 import os 
 
 from crewai import Crew, Process, Agent, Task
@@ -260,7 +259,7 @@ if __name__ == "__main__":
     if company := st.chat_input():
         agentops.init(tags=["finbot-crewai-streamlit", company, model])
 
-        record(ActionEvent([company, model]))
+        agentops.record(agentops.ActionEvent([company, model]))
 
         log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                 news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
