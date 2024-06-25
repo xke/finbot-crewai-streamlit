@@ -26,13 +26,13 @@ load_dotenv()
 from datetime import date
 
 @weave.op()
-@record_function('log_run')
+@agentops.record_function('log_run')
 def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
              news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):     
     return result
 
 @weave.op()
-@record_function("run_crew")
+@agentops.record_function("run_crew")
 def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                     news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
 
