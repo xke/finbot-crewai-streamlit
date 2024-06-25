@@ -1,5 +1,5 @@
 import streamlit as st
-import agentops
+#import agentops
 import os 
 
 from crewai import Crew, Process, Agent, Task
@@ -24,14 +24,14 @@ load_dotenv()
 
 from datetime import date
 
-@weave.op()
-@agentops.record_function('log_run')
+#@weave.op()
+#@agentops.record_function('log_run')
 def log_run(state, model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
              news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result):     
     return result
 
-@weave.op()
-@agentops.record_function("run_crew")
+#@weave.op()
+#@agentops.record_function("run_crew")
 def run_crew(model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                     news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled):
 
@@ -257,9 +257,9 @@ if __name__ == "__main__":
     # Handle user input
 
     if company := st.chat_input():
-        agentops.init(tags=["finbot-crewai-streamlit", company, model])
+        #agentops.init(tags=["finbot-crewai-streamlit", company, model])
 
-        agentops.record(agentops.ActionEvent([company, model]))
+        #agentops.record(agentops.ActionEvent([company, model]))
 
         log_run("start", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                 news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, None)
@@ -275,7 +275,7 @@ if __name__ == "__main__":
         log_run("finish", model, company, historical_horizon_in_years, prediction_time_horizon_in_years,
                 news_analysis_agent_enabled, sec_filings_agent_enabled, technical_indicators_agent_enabled, result)
 
-        if result: 
-            agentops.end_session('Success')
-        else:
-            agentops.end_session('Failure')
+        #if result: 
+        #    agentops.end_session('Success')
+        #else:
+        #    agentops.end_session('Failure')

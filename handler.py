@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_core.callbacks import BaseCallbackHandler
 from typing import Any, Dict
-import agentops
+#import agentops
 
 class CustomHandler(BaseCallbackHandler):
     """A custom handler for logging interactions within the process chain."""
